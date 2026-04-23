@@ -24,6 +24,11 @@ const LoginPage = () => {
 
   return (
     <div className="auth-container">
+      {/* Dynamic Glass Bubbles specifically built for Dark Theme */}
+      <div className="glass-bubble" style={{ width: '400px', height: '400px', top: '-10%', left: '-5%', animationDuration: '20s' }}></div>
+      <div className="glass-bubble" style={{ width: '300px', height: '300px', bottom: '-5%', right: '-5%', animationDuration: '15s', animationDelay: '2s' }}></div>
+      <div className="glass-bubble" style={{ width: '150px', height: '150px', top: '40%', left: '15%', animationDuration: '18s', animationDelay: '5s' }}></div>
+      
       <div className="auth-card">
         <h2>Welcome Back</h2>
         <p className="auth-subtitle">Login to your account</p>
