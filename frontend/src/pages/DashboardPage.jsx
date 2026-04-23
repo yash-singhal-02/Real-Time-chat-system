@@ -4,7 +4,7 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import './Dashboard.css';
 
-const ENDPOINT = "http://localhost:5001";
+const ENDPOINT = "https://my-realtime-backend.onrender.com";
 var socket, selectedChatCompare;
 
 const DashboardPage = () => {
@@ -123,7 +123,7 @@ const DashboardPage = () => {
     if (!searchQuery) { setUsers([]); return; }
     try {
       const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-      const { data } = await axios.get(`http://localhost:5001/api/user?search=${searchQuery}`, config);
+      const { data } = await axios.get(`https://my-realtime-backend.onrender.com/api/user?search=${searchQuery}`, config);
       setUsers(data);
     } catch (error) { console.error(error); }
   };
@@ -131,7 +131,7 @@ const DashboardPage = () => {
   const fetchChats = async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-      const { data } = await axios.get(`http://localhost:5001/api/chat`, config);
+      const { data } = await axios.get(`https://my-realtime-backend.onrender.com/api/chat`, config);
       setChats(data);
     } catch (error) { console.error(error); }
   };
@@ -139,7 +139,7 @@ const DashboardPage = () => {
   const deleteChatRecord = async (chatId) => {
     try {
       const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-      await axios.delete(`http://localhost:5001/api/chat/${chatId}`, config);
+      await axios.delete(`https://my-realtime-backend.onrender.com/api/chat/${chatId}`, config);
       setChats(chats.filter((c) => c._id !== chatId));
       if (selectedChat && selectedChat._id === chatId) {
          setSelectedChat(null);
@@ -154,7 +154,7 @@ const DashboardPage = () => {
   const clearChatHistory = async (chatId) => {
     try {
       const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-      await axios.delete(`http://localhost:5001/api/message/clear/${chatId}`, config);
+      await axios.delete(`https://my-realtime-backend.onrender.com/api/message/clear/${chatId}`, config);
       setMessages([]);
     } catch (error) { 
       console.error(error); 
@@ -166,7 +166,7 @@ const DashboardPage = () => {
     try {
       setAiChatMode(false);
       const config = { headers: { "Content-type": "application/json", Authorization: `Bearer ${userInfo.token}` } };
-      const { data } = await axios.post(`http://localhost:5001/api/chat`, { userId }, config);
+      const { data } = await axios.post(`https://my-realtime-backend.onrender.com/api/chat`, { userId }, config);
       
       if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
       setSelectedChat(data);
@@ -178,7 +178,7 @@ const DashboardPage = () => {
     if (!selectedChat) return;
     try {
       const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-      const { data } = await axios.get(`http://localhost:5001/api/message/${selectedChat._id}`, config);
+      const { data } = await axios.get(`https://my-realtime-backend.onrender.com/api/message/${selectedChat._id}`, config);
       setMessages(data);
       socket.emit("join chat", selectedChat._id);
     } catch (error) { console.error(error); }
@@ -197,7 +197,7 @@ const DashboardPage = () => {
           
           setIsTyping(true);
           const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-          const { data } = await axios.post(`http://localhost:5001/api/chat/openai`, { prompt: currentPrompt }, config);
+          const { data } = await axios.post(`https://my-realtime-backend.onrender.com/api/chat/openai`, { prompt: currentPrompt }, config);
           setIsTyping(false);
           
           const aiMsg = { _id: Date.now() + 1, content: data.reply, sender: { _id: 'openai', name: 'AI Assistant' }, createdAt: new Date().toISOString() };
@@ -225,11 +225,11 @@ const DashboardPage = () => {
            formData.append("media", mediaFile);
            
            config.headers['Content-type'] = 'multipart/form-data';
-           const { data } = await axios.post(`http://localhost:5001/api/message/media`, formData, config);
+           const { data } = await axios.post(`https://my-realtime-backend.onrender.com/api/message/media`, formData, config);
            sentMessageData = data;
         } else {
            config.headers['Content-type'] = 'application/json';
-           const { data } = await axios.post(`http://localhost:5001/api/message`, { content: newMessage, chatId: selectedChat._id }, config);
+           const { data } = await axios.post(`https://my-realtime-backend.onrender.com/api/message`, { content: newMessage, chatId: selectedChat._id }, config);
            sentMessageData = data;
         }
 
@@ -246,7 +246,7 @@ const DashboardPage = () => {
   const fetchSmartReplies = async (content) => {
     try {
         const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-        const { data } = await axios.post(`http://localhost:5001/api/chat/smart-replies`, { latestMessage: content }, config);
+        const { data } = await axios.post(`https://my-realtime-backend.onrender.com/api/chat/smart-replies`, { latestMessage: content }, config);
         if(data && data.replies) {
             setSmartReplies(data.replies);
         }
@@ -389,9 +389,9 @@ const DashboardPage = () => {
                   <div className={`message ${m.sender._id === userInfo._id ? 'own-message' : 'other-message'}`}>
                     {m.mediaUrl && (
                       m.mediaUrl.endsWith('.mp4') ? (
-                        <video src={`http://localhost:5001${m.mediaUrl}`} controls style={{maxWidth: '200px', borderRadius: '10px'}} />
+                        <video src={`https://my-realtime-backend.onrender.com${m.mediaUrl}`} controls style={{maxWidth: '200px', borderRadius: '10px'}} />
                       ) : (
-                        <img src={`http://localhost:5001${m.mediaUrl}`} alt="Attached media" className="media-image" />
+                        <img src={`https://my-realtime-backend.onrender.com${m.mediaUrl}`} alt="Attached media" className="media-image" />
                       )
                     )}
                     {m.content && <div>{m.content}</div>}
