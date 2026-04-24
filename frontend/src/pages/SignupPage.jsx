@@ -14,7 +14,7 @@ const SignupPage = () => {
     e.preventDefault();
     try {
       const config = { headers: { 'Content-Type': 'application/json' } };
-      const { data } = await axios.post('https://my-realtime-backend.onrender.com/api/auth/register', { name, email, password }, config);
+      const { data } = await axios.post('/api/auth/register', { name, email, password }, config);
       localStorage.setItem('userInfo', JSON.stringify(data));
       navigate('/dashboard');
     } catch (err) {

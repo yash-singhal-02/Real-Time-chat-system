@@ -14,7 +14,7 @@ const LoginPage = () => {
     try {
       const config = { headers: { 'Content-Type': 'application/json' } };
       // Attempting to post to local backend server running on port 5000
-      const { data } = await axios.post('https://my-realtime-backend.onrender.com/api/auth/login', { email, password }, config);
+      const { data } = await axios.post('/api/auth/login', { email, password }, config);
       localStorage.setItem('userInfo', JSON.stringify(data));
       navigate('/dashboard');
     } catch (err) {
