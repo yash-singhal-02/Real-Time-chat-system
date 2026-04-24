@@ -185,7 +185,7 @@ const DashboardPage = () => {
   };
 
   const sendMessage = async (e) => {
-    if (e.key === "Enter" && (newMessage || mediaFile)) {
+    if ((e.type === 'click' || e.key === "Enter") && (newMessage || mediaFile)) {
       if (aiChatMode) {
         try {
           const userMsg = { _id: Date.now(), content: newMessage, sender: userInfo, createdAt: new Date().toISOString() };
@@ -300,7 +300,7 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className={`dashboard-container ${theme !== 'red' ? `theme-${theme}` : ''}`}>
+    <div className={`dashboard-container ${theme !== 'red' ? `theme-${theme}` : ''} ${(selectedChat || aiChatMode) ? 'chat-active' : ''}`}>
       <div className="background-bubbles-wrapper">
         <div className="floating-bubble bubble-1"></div>
         <div className="floating-bubble bubble-2"></div>
@@ -372,7 +372,10 @@ const DashboardPage = () => {
         ) : (
           <div className="active-chat">
             <div className="chat-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3>{aiChatMode ? "AI Assistant" : selectedChat?.users?.find(u => u._id !== userInfo._id)?.name}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button className="mobile-back-btn" onClick={() => { setSelectedChat(null); setAiChatMode(false); }}>←</button>
+                <h3>{aiChatMode ? "AI Assistant" : selectedChat?.users?.find(u => u._id !== userInfo._id)?.name}</h3>
+              </div>
               <div style={{ position: 'relative' }}>
                 <button className="chat-menu-btn" onClick={(e) => { e.stopPropagation(); setShowChatMenu(!showChatMenu); }}>⋮</button>
                 {showChatMenu && (
@@ -437,6 +440,9 @@ const DashboardPage = () => {
                   onChange={typingHandler}
                   onKeyDown={sendMessage}
                 />
+                <button className="send-btn" onClick={sendMessage} title="Send Message">
+                  ➤
+                </button>
               </div>
             </div>
           </div>
