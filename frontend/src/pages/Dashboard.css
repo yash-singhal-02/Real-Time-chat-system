@@ -734,6 +734,10 @@ button.danger-text:hover {
     bottom: 15px;
     left: 15px;
   }
+  
+  .dashboard-container.chat-active .settings-container {
+    display: none;
+  }
 }
 
 .send-btn {
