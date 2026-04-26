@@ -310,7 +310,7 @@ const DashboardPage = () => {
         <div className="sidebar-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <img src="/logo.png" alt="Logo" className="app-logo" />
-            <h2>Chats</h2>
+            <h2>TALKIFY</h2>
           </div>
         </div>
         

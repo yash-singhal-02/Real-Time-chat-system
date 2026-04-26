@@ -30,7 +30,7 @@ const LandingPage = () => {
           <div className="logo-icon">
             <i className="fas fa-comment-dots"></i>
           </div>
-          <span className="logo-text">ChatTalk</span>
+          <span className="logo-text">TALKIFY</span>
         </div>
         
         <div className="nav-links">
@@ -172,7 +172,7 @@ const LandingPage = () => {
       <section className="cta-section animate-on-scroll">
         <div className="cta-card">
           <h2>Ready to transform your chat experience?</h2>
-          <p>Join thousands of users who are already using ChatTalk.</p>
+          <p>Join thousands of users who are already using TALKIFY.</p>
           <button className="cta-btn primary large" onClick={() => navigate('/signup')}>
             Get Started Now
           </button>
@@ -184,7 +184,7 @@ const LandingPage = () => {
           <div className="footer-brand">
             <div className="logo-section">
               <div className="logo-icon small"><i className="fas fa-comment-dots"></i></div>
-              <span className="logo-text small">ChatTalk</span>
+              <span className="logo-text small">TALKIFY</span>
             </div>
             <p>Redefining real-time communication with the power of AI.</p>
           </div>
@@ -208,7 +208,7 @@ const LandingPage = () => {
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; 2026 ChatTalk. All rights reserved.</p>
+          <p>&copy; 2026 TALKIFY. All rights reserved.</p>
         </div>
       </footer>
     </div>
