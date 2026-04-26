@@ -472,7 +472,7 @@ const DashboardPage = () => {
             </div>
             <div className="settings-divider"></div>
             <div className="settings-actions">
-              <button className="settings-action-btn" onClick={logoutHandler}>🚪 Logout</button>
+              <button className="settings-action-btn" onClick={logoutHandler}><i className="fas fa-sign-out-alt" style={{ marginRight: '8px' }}></i>Logout</button>
             </div>
           </div>
         )}

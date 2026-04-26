@@ -3,7 +3,7 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #09090b;
+  background-color: #000000;
   position: relative;
   overflow: hidden;
   font-family: 'Inter', 'Roboto', sans-serif;
@@ -13,13 +13,14 @@
 .glass-bubble {
   position: absolute;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.015);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   animation: floatBubble 15s infinite ease-in-out;
   z-index: 0;
   pointer-events: none;
+  box-shadow: 0 8px 32px 0 rgba(0, 198, 255, 0.2);
 }
 
 @keyframes floatBubble {
@@ -28,18 +29,19 @@
 }
 
 .auth-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 2px solid #1e3a8a;
   padding: 3rem 2.5rem;
   border-radius: 24px;
-  width: 100%;
+  width: 90%;
   max-width: 420px;
   position: relative;
   z-index: 10;
-  box-shadow: 0 16px 40px 0 rgba(0, 0, 0, 0.6);
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 0 30px rgba(30, 58, 138, 0.4), 0 16px 40px 0 rgba(0, 0, 0, 0.8);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  margin: 20px;
 }
 
 .auth-card:hover {
@@ -156,12 +158,33 @@
 
 @media (max-width: 480px) {
   .auth-card {
-    padding: 2.5rem 1.5rem;
-    width: 90%;
-    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    border-radius: 20px;
   }
   
   .auth-card h2 {
     font-size: 1.8rem;
+  }
+
+  .auth-subtitle {
+    margin-bottom: 1.8rem;
+    font-size: 0.9rem;
+  }
+
+  .input-group label {
+    font-size: 0.9rem;
+  }
+}
+
+/* Fix for small height screens */
+@media (max-height: 700px) {
+  .auth-container {
+    align-items: flex-start;
+    padding-top: 5vh;
+    padding-bottom: 5vh;
+    overflow-y: auto;
+  }
+  .auth-card {
+    padding: 2rem;
   }
 }
