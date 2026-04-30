@@ -527,6 +527,19 @@
   text-align: right;
   margin-top: 5px;
 }
+
+.read-status {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.read-status.read {
+  color: #3498db; /* Blue color for seen messages */
+  text-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+}
+
 .chat-menu-btn {
   background: transparent;
   border: none;
@@ -732,12 +745,27 @@ button.danger-text:hover {
   .settings-container {
     bottom: 20px;
     left: 20px;
+    z-index: 1000;
   }
   
   .dashboard-container.chat-active .settings-container {
     display: none;
   }
+
+  .sidebar-header {
+    padding: 1rem;
+  }
+
+  .ai-chat-btn {
+    padding: 14px;
+    font-size: 1.1rem;
+  }
+
+  .user-item {
+    padding: 16px;
+  }
 }
+
 
 /* Fix for very small devices */
 @media (max-width: 380px) {
@@ -769,7 +797,67 @@ button.danger-text:hover {
   box-shadow: 0 4px 15px rgba(var(--theme-rgb), 0.3);
 }
 
-.send-btn:hover {
+.send-btn:hover:not(:disabled) {
   background: var(--theme-dark);
   transform: scale(1.05);
 }
+
+.send-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+
+/* --- Markdown Styles --- */
+.markdown-body {
+  word-wrap: break-word;
+}
+
+.md-h1, .md-h2, .md-h3 {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.md-h1 { font-size: 1.6rem; }
+.md-h2 { font-size: 1.4rem; }
+.md-h3 { font-size: 1.2rem; }
+
+.md-p {
+  margin: 0.8rem 0;
+  line-height: 1.6;
+}
+
+.md-li, .md-li-num {
+  margin-left: 1.2rem;
+  margin-bottom: 0.4rem;
+  list-style-position: outside;
+  display: list-item;
+}
+
+.md-li {
+  list-style-type: disc;
+}
+
+.md-li-num {
+  list-style-type: decimal;
+}
+
+.md-br {
+  height: 0.5rem;
+}
+
+.markdown-body strong {
+  color: var(--theme-primary);
+  font-weight: 700;
+}
+
+.other-message .markdown-body strong {
+  color: #fff;
+  background: rgba(var(--theme-rgb), 0.2);
+  padding: 0 4px;
+  border-radius: 4px;
+}
+

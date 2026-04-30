@@ -83,4 +83,21 @@ const clearMessages = async (req, res) => {
   }
 };
 
-module.exports = { sendMessage, allMessages, sendMediaMessage, clearMessages };
+const markAsRead = async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const userId = req.user._id;
+
+    // Update all messages in this chat that don't have this user in readBy
+    const updated = await Message.updateMany(
+      { chat: chatId, sender: { $ne: userId }, readBy: { $ne: userId } },
+      { $addToSet: { readBy: userId } }
+    );
+
+    res.status(200).json({ success: true, count: updated.nModified });
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
+
+module.exports = { sendMessage, allMessages, sendMediaMessage, clearMessages, markAsRead };

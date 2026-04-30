@@ -90,6 +90,42 @@
   transition: all 0.3s ease;
 }
 
+.password-wrapper input {
+  padding-right: 45px; /* Space for the eye icon */
+}
+
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+
+.password-toggle-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.password-toggle-btn svg {
+  display: block;
+}
+
 .input-group input::placeholder {
   color: rgba(255, 255, 255, 0.5);
 }
@@ -160,6 +196,8 @@
   .auth-card {
     padding: 2rem 1.5rem;
     border-radius: 20px;
+    width: 95%;
+    margin: 10px;
   }
   
   .auth-card h2 {
@@ -174,7 +212,17 @@
   .input-group label {
     font-size: 0.9rem;
   }
+
+  .input-group input {
+    padding: 12px;
+    font-size: 0.95rem;
+  }
+
+  .password-toggle-btn {
+    right: 8px;
+  }
 }
+
 
 /* Fix for small height screens */
 @media (max-height: 700px) {

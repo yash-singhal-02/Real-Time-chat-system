@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import io from 'socket.io-client';
+import MarkdownRenderer from '../utils/MarkdownRenderer';
 import './Dashboard.css';
 
 const ENDPOINT = window.location.hostname === "localhost" ? "http://localhost:5001" : "https://my-realtime-backend.onrender.com";
@@ -21,10 +22,11 @@ const DashboardPage = () => {
   // New State for media and AI replies
   const [smartReplies, setSmartReplies] = useState([]);
   const [mediaFile, setMediaFile] = useState(null);
+  const [isSending, setIsSending] = useState(false);
   const [aiChatMode, setAiChatMode] = useState(false);
   const [aiMessages, setAiMessages] = useState([{ _id: "welcome", content: "Hello! I'm your AI Assistant. How can I help you today?", sender: { _id: 'openai', name: 'AI Assistant' }, createdAt: new Date().toISOString() }]);
   const [showSettings, setShowSettings] = useState(false);
-  const [theme, setTheme] = useState('green');
+  const [theme, setTheme] = useState(localStorage.getItem('chat-theme') || 'green');
   const [showChatMenu, setShowChatMenu] = useState(false);
   const [showOptionsId, setShowOptionsId] = useState(null);
   
@@ -80,12 +82,40 @@ const DashboardPage = () => {
   }, [navigate]);
 
   useEffect(() => {
+    localStorage.setItem('chat-theme', theme);
+  }, [theme]);
+
+  // Sync theme if changed in other tabs/pages
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedTheme = localStorage.getItem('chat-theme');
+      if (savedTheme && savedTheme !== theme) {
+        setTheme(savedTheme);
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [theme]);
+
+  const markAsRead = async (chatId) => {
+    if (!chatId || aiChatMode) return;
+    try {
+      const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
+      await axios.put(`/api/message/read/${chatId}`, {}, config);
+      socket.emit("message read", { chatId, userId: userInfo._id });
+    } catch (error) {
+      console.error("Error marking as read:", error);
+    }
+  };
+
+  useEffect(() => {
     if (aiChatMode) {
       setMessages(aiMessages);
       return;
     }
     if (selectedChat) {
       fetchMessages();
+      markAsRead(selectedChat._id);
       selectedChatCompare = selectedChat;
       setSmartReplies([]); // reset smart replies when switching chat
     }
@@ -95,17 +125,30 @@ const DashboardPage = () => {
     if(!socket) return;
     socket.on("message received", (newMessageReceived) => {
       if (!selectedChatCompare || selectedChatCompare._id !== newMessageReceived.chat._id) {
-        // Here we could add a notification if the message is from someone else
+        // Here we could add a notification
       } else {
         setMessages(prev => [...prev, newMessageReceived]);
+        markAsRead(selectedChatCompare._id);
         if(newMessageReceived.sender._id !== userInfo._id) {
             fetchSmartReplies(newMessageReceived.content);
         }
       }
     });
 
+    socket.on("message read", ({ chatId, userId }) => {
+      if (selectedChatCompare && selectedChatCompare._id === chatId) {
+        setMessages(prev => prev.map(m => {
+          if (m.sender._id !== userId && !m.readBy.includes(userId)) {
+            return { ...m, readBy: [...m.readBy, userId] };
+          }
+          return m;
+        }));
+      }
+    });
+
     return () => {
       socket.off("message received");
+      socket.off("message read");
       socket.off("typing");
       socket.off("stop typing");
     }
@@ -185,25 +228,33 @@ const DashboardPage = () => {
   };
 
   const sendMessage = async (e) => {
-    if ((e.type === 'click' || e.key === "Enter") && (newMessage || mediaFile)) {
+    if ((e.type === 'click' || e.key === "Enter") && (newMessage.trim() || mediaFile) && !isSending) {
+      const messageToSubmit = newMessage;
+      const mediaToSubmit = mediaFile;
+      
+      // Clear input immediately to prevent double sending and give instant feedback
+      setNewMessage("");
+      setMediaFile(null);
+      setIsSending(true);
+
       if (aiChatMode) {
         try {
-          const userMsg = { _id: Date.now(), content: newMessage, sender: userInfo, createdAt: new Date().toISOString() };
+          const userMsg = { _id: Date.now(), content: messageToSubmit, sender: userInfo, createdAt: new Date().toISOString() };
           const updatedMessages = [...messages, userMsg];
           setMessages(updatedMessages);
           setAiMessages(updatedMessages);
-          const currentPrompt = newMessage;
-          setNewMessage("");
           
           setIsTyping(true);
           const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-          const { data } = await axios.post(`/api/chat/openai`, { prompt: currentPrompt }, config);
+          const { data } = await axios.post(`/api/chat/openai`, { prompt: messageToSubmit }, config);
           setIsTyping(false);
+          setIsSending(false);
           
           const aiMsg = { _id: Date.now() + 1, content: data.reply, sender: { _id: 'openai', name: 'AI Assistant' }, createdAt: new Date().toISOString() };
           setMessages(prev => { const newArr = [...prev, aiMsg]; setAiMessages(newArr); return newArr; });
         } catch (error) { 
            setIsTyping(false);
+           setIsSending(false);
            const errorText = error.response?.data?.message || error.message;
            const aiMsg = { _id: Date.now() + 1, content: `Error: ${errorText}. Please check the console or your API key.`, sender: { _id: 'openai', name: 'AI Assistant' }, createdAt: new Date().toISOString() };
            setMessages(prev => { const newArr = [...prev, aiMsg]; setAiMessages(newArr); return newArr; });
@@ -215,31 +266,34 @@ const DashboardPage = () => {
       socket.emit("stop typing", selectedChat._id);
       try {
         const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
-        
         let sentMessageData;
         
-        if (mediaFile) {
+        if (mediaToSubmit) {
            const formData = new FormData();
-           formData.append("content", newMessage);
+           formData.append("content", messageToSubmit);
            formData.append("chatId", selectedChat._id);
-           formData.append("media", mediaFile);
+           formData.append("media", mediaToSubmit);
            
            config.headers['Content-type'] = 'multipart/form-data';
            const { data } = await axios.post(`/api/message/media`, formData, config);
            sentMessageData = data;
         } else {
            config.headers['Content-type'] = 'application/json';
-           const { data } = await axios.post(`/api/message`, { content: newMessage, chatId: selectedChat._id }, config);
+           const { data } = await axios.post(`/api/message`, { content: messageToSubmit, chatId: selectedChat._id }, config);
            sentMessageData = data;
         }
 
-        setNewMessage("");
-        setMediaFile(null);
         socket.emit("new message", sentMessageData);
         setMessages(prev => [...prev, sentMessageData]);
         setSmartReplies([]);
+        setIsSending(false);
         
-      } catch (error) { console.error(error); }
+      } catch (error) { 
+        console.error(error); 
+        setIsSending(false);
+        // Optionally restore the message if sending failed
+        setNewMessage(messageToSubmit);
+      }
     }
   };
 
@@ -397,8 +451,15 @@ const DashboardPage = () => {
                         <img src={`http://localhost:5001${m.mediaUrl}`} alt="Attached media" className="media-image" />
                       )
                     )}
-                    {m.content && <div>{m.content}</div>}
-                    <span className="message-time">{formatTime(m.createdAt, m._id)}</span>
+                    {m.content && <MarkdownRenderer content={m.content} />}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
+                      <span className="message-time">{formatTime(m.createdAt, m._id)}</span>
+                      {m.sender._id === userInfo._id && !aiChatMode && (
+                        <span className={`read-status ${m.readBy.length > 0 ? 'read' : ''}`}>
+                          ✓✓
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -440,8 +501,8 @@ const DashboardPage = () => {
                   onChange={typingHandler}
                   onKeyDown={sendMessage}
                 />
-                <button className="send-btn" onClick={sendMessage} title="Send Message">
-                  ➤
+                <button className="send-btn" onClick={sendMessage} title="Send Message" disabled={isSending}>
+                  {isSending ? '...' : '➤'}
                 </button>
               </div>
             </div>
@@ -449,34 +510,8 @@ const DashboardPage = () => {
         )}
       </div>
       
-      <div className="settings-container" ref={settingsRef}>
-        {showSettings && (
-          <div className="settings-menu">
-            <div className="settings-profile">
-              <div className="settings-avatar">{userInfo?.name?.charAt(0).toUpperCase()}</div>
-              <div>
-                 <h4>{userInfo?.name}</h4>
-                 <p>{userInfo?.email}</p>
-              </div>
-            </div>
-            <div className="settings-divider"></div>
-            <div className="theme-selector">
-              <p>Choose theme</p>
-              <div className="theme-options">
-                <div className={`theme-dot ${theme === 'red' ? 'active' : ''}`} style={{backgroundColor: '#d32f2f'}} onClick={() => setTheme('red')} title="Red"></div>
-                <div className={`theme-dot ${theme === 'green' ? 'active' : ''}`} style={{backgroundColor: '#2e7d32'}} onClick={() => setTheme('green')} title="Green"></div>
-                <div className={`theme-dot ${theme === 'blue' ? 'active' : ''}`} style={{backgroundColor: '#1976d2'}} onClick={() => setTheme('blue')} title="Blue"></div>
-                <div className={`theme-dot ${theme === 'purple' ? 'active' : ''}`} style={{backgroundColor: '#7b1fa2'}} onClick={() => setTheme('purple')} title="Purple"></div>
-                <div className={`theme-dot ${theme === 'orange' ? 'active' : ''}`} style={{backgroundColor: '#f57c00'}} onClick={() => setTheme('orange')} title="Orange"></div>
-              </div>
-            </div>
-            <div className="settings-divider"></div>
-            <div className="settings-actions">
-              <button className="settings-action-btn" onClick={logoutHandler}><i className="fas fa-sign-out-alt" style={{ marginRight: '8px' }}></i>Logout</button>
-            </div>
-          </div>
-        )}
-        <button className="settings-fab" onClick={() => setShowSettings(!showSettings)}>
+      <div className="settings-container">
+        <button className="settings-fab" onClick={() => navigate('/settings')}>
           ⚙️
         </button>
       </div>
