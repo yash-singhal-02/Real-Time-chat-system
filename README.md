@@ -10,7 +10,7 @@ Live Application: https://chat-talk-ten.vercel.app/login
 
 ### Application Preview
 
-<img width="100%" alt="Real-Time Chat System" src="./assets/chat-system-preview.png" />
+<img width="100%" alt="Real-Time Chat System" src="Screenshot.png" />
 
 ---
 
