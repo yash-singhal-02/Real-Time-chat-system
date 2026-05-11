@@ -142,5 +142,3 @@ It reflects hands-on experience with:
 ## Author
 
 Yash Singhal
-
-GitHub: https://github.com/yash-singhal-02
