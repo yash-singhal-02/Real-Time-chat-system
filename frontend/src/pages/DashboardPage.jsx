@@ -5,7 +5,7 @@ import io from 'socket.io-client';
 import MarkdownRenderer from '../utils/MarkdownRenderer';
 import './Dashboard.css';
 
-const ENDPOINT = window.location.hostname === "localhost" ? "http://localhost:5001" : "https://my-realtime-backend.onrender.com";
+const ENDPOINT = ["localhost", "127.0.0.1"].includes(window.location.hostname) ? "http://127.0.0.1:5001" : "https://my-realtime-backend.onrender.com";
 var socket, selectedChatCompare;
 
 const DashboardPage = () => {
@@ -446,9 +446,9 @@ const DashboardPage = () => {
                   <div className={`message ${m.sender._id === userInfo._id ? 'own-message' : 'other-message'}`}>
                     {m.mediaUrl && (
                       m.mediaUrl.endsWith('.mp4') ? (
-                        <video src={`http://localhost:5001${m.mediaUrl}`} controls style={{maxWidth: '200px', borderRadius: '10px'}} />
+                        <video src={`${ENDPOINT}${m.mediaUrl}`} controls style={{maxWidth: '200px', borderRadius: '10px'}} />
                       ) : (
-                        <img src={`http://localhost:5001${m.mediaUrl}`} alt="Attached media" className="media-image" />
+                        <img src={`${ENDPOINT}${m.mediaUrl}`} alt="Attached media" className="media-image" />
                       )
                     )}
                     {m.content && <MarkdownRenderer content={m.content} />}

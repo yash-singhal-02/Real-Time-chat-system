@@ -65,15 +65,25 @@ const requestOtp = async (req, res) => {
     user.resetOtpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
     await user.save();
 
-    const sendEmail = require('../utils/sendEmail');
-    await sendEmail({
-      email: user.email,
-      subject: 'Your Password Reset OTP',
-      message: `Your OTP for password reset is: ${otp}. It is valid for 10 minutes.`,
-      html: `<h3>Your Password Reset OTP</h3><p>Your OTP for password reset is: <strong>${otp}</strong>. It is valid for 10 minutes.</p>`,
-    });
-
-    res.json({ message: 'OTP sent to email' });
+    try {
+      const sendEmail = require('../utils/sendEmail');
+      await sendEmail({
+        email: user.email,
+        subject: 'Your Password Reset OTP',
+        message: `Your OTP for password reset is: ${otp}. It is valid for 10 minutes.`,
+        html: `<h3>Your Password Reset OTP</h3><p>Your OTP for password reset is: <strong>${otp}</strong>. It is valid for 10 minutes.</p>`,
+      });
+      res.json({ message: 'OTP sent to email' });
+    } catch (emailError) {
+      console.error('SMTP Email Send Failed:', emailError);
+      console.log('\n======================================================');
+      console.log(`[DEV FALLBACK] OTP code for ${email} is: ${otp}`);
+      console.log('======================================================\n');
+      res.status(200).json({
+        message: 'OTP generated! (Note: Email dispatch failed due to bad SMTP credentials. For development, we logged the OTP to your backend server terminal.)',
+        devFallback: true
+      });
+    }
   } catch (error) {
     console.error('OTP Request Error:', error);
     res.status(500).json({ message: 'Server error: ' + error.message });

@@ -211,7 +211,7 @@ const PeerChatPage = () => {
               {messages.map((m, i) => (
                 <div key={m._id || i} className={`message-wrapper ${m.sender._id === userInfo._id ? 'own-wrapper' : 'other-wrapper'}`}>
                   <div className={`message ${m.sender._id === userInfo._id ? 'own-message' : 'other-message'}`}>
-                    {m.mediaUrl && <img src={`http://127.0.0.1:5001${m.mediaUrl}`} className="media-image" />}
+                    {m.mediaUrl && <img src={`${ENDPOINT}${m.mediaUrl}`} className="media-image" />}
                     <MarkdownRenderer content={m.content} />
                   </div>
                 </div>
