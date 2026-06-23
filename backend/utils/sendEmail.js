@@ -4,8 +4,8 @@ const dns = require('dns');
 const sendEmail = async (options) => {
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // STARTTLS
+    port: 465,
+    secure: true, // true for port 465 SSL/TLS
     connectionTimeout: 5000, // 5 seconds connection timeout
     greetingTimeout: 5000,
     socketTimeout: 5000,
