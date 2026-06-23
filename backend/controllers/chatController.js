@@ -88,23 +88,46 @@ const smartReplies = async (req, res) => {
 };
 
 const askOpenAI = async (req, res) => {
-  try {
-    const { prompt } = req.body;
-    if (!process.env.GEMINI_API_KEY) {
-       return res.status(500).json({ message: "Gemini API Key not configured in .env" });
-    }
-
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    const result = await model.generateContent(prompt);
-    
-    // Generate text from Gemini's response
-    const text = result.response.text();
-
-    res.status(200).json({ reply: text });
-  } catch(err) {
-    res.status(500).json({ message: err.message });
+  const { prompt } = req.body;
+  if (!process.env.GEMINI_API_KEY) {
+     return res.status(500).json({ message: "Gemini API Key not configured in .env" });
   }
+
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  
+  // We try these models in order if one is overloaded (503) or rate-limited
+  const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-pro-latest"];
+  let lastError = null;
+
+  for (const modelName of modelsToTry) {
+    let retries = 2; // Try up to 2 times for each model
+    while (retries >= 0) {
+      try {
+        console.log(`Attempting AI generation using ${modelName}...`);
+        const model = genAI.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(prompt);
+        const text = result.response.text();
+        return res.status(200).json({ reply: text });
+      } catch (err) {
+        lastError = err;
+        console.error(`Error with ${modelName}:`, err.message);
+        
+        // If it's a temporary overload (503 / High Demand / Rate limit)
+        const isTemporary = err.message.includes("503") || err.message.includes("429") || err.message.toLowerCase().includes("high demand");
+        if (isTemporary && retries > 0) {
+          console.log(`Temporary error. Retrying in 1.5 seconds... (${retries} retries left)`);
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          retries--;
+        } else {
+          // If not temporary or we ran out of retries, break out to try the next model
+          break;
+        }
+      }
+    }
+  }
+
+  // If all models failed
+  res.status(500).json({ message: `AI Assistant is currently overloaded. Please try again in a few seconds. (Error: ${lastError ? lastError.message : 'Unknown'})` });
 };
 
 const deleteChat = async (req, res) => {
