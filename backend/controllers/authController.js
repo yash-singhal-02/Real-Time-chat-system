@@ -75,7 +75,12 @@ const requestOtp = async (req, res) => {
       });
       res.json({ message: 'OTP sent to email' });
     } catch (emailError) {
-      console.error('SMTP Email Send Failed:', emailError);
+      console.error('Email Send Failed:', emailError);
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(500).json({ 
+          message: 'Failed to send OTP email. Please check the backend SMTP/Resend configuration.' 
+        });
+      }
       console.log('\n======================================================');
       console.log(`[DEV FALLBACK] OTP code for ${email} is: ${otp}`);
       console.log('======================================================\n');
